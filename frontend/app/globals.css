@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-inter), system-ui, "Segoe UI", Arial, sans-serif;
+}
+
+/* No dark-mode block on purpose. This is a wall-display dashboard for a demo
+   room; the palette is fixed so the map colours mean the same thing on every
+   machine, whatever the operating system theme happens to be. */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-inter), system-ui, "Segoe UI", Arial, sans-serif;
+}
+
+/* ---------------------------------------------------------------- the map */
+
+/*
+ * This rule is load-bearing. Do not delete it.
+ *
+ * MapLibre stamps `maplibregl-map` onto whatever element it takes over, and
+ * maplibre-gl.css declares `.maplibregl-map { position: relative }`. That
+ * stylesheet is imported unlayered, and in the CSS cascade an unlayered rule
+ * beats anything inside `@layer` - which is where Tailwind v4 puts every
+ * utility, `absolute` included.
+ *
+ * The result was a container stuck at `position: relative`, so `inset-0` did
+ * nothing: full width, but height resolved to `auto` = 0, and MapLibre's own
+ * `overflow: hidden` clipped the canvas away entirely. The map was built and
+ * working, just zero pixels tall.
+ *
+ * Two class selectors outrank MapLibre's one, so this wins cleanly.
+ */
+.map-host.maplibregl-map {
+  position: absolute;
+  inset: 0;
+}
+
+/* Numbered pins for the top-10 risk tracts. Built as a plain DOM element
+   because MapLibre markers live outside React's tree. */
+.heat-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.5);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+
+.heat-pin:hover {
+  transform: scale(1.2);
+}
+
+/* Caption for the dashed study-area boundary. An HTML marker rather than a
+   MapLibre symbol layer, so it needs no glyph server.
+   Note: no `transform` here. MapLibre writes its own inline transform onto
+   every marker element to position it, which silently wins over anything set
+   in CSS - the vertical nudge has to go through the Marker `offset` option. */
+.study-label {
+  white-space: nowrap;
+  border-radius: 9999px;
+  border: 1px solid rgb(30 64 175 / 0.35);
+  background: rgb(255 255 255 / 0.92);
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #1e40af;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.18);
+  pointer-events: none;
+}
+
+/* MapLibre ships its own popup chrome; align it with the rest of the page. */
+.maplibregl-popup-content {
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 30px rgb(15 23 42 / 0.22);
+}
+
+.maplibregl-ctrl-attrib {
+  font-size: 10px;
+}
+
+/* ------------------------------------------------------------- animations */
+
+@keyframes shimmer {
+  0% {
+    background-position: -800px 0;
+  }
+  100% {
+    background-position: 800px 0;
+  }
+}
+
+/* Loading placeholder for the map. A moving highlight reads as "working" in a
+   way a static grey block does not. */
+.skeleton {
+  background-image: linear-gradient(
+    100deg,
+    #e2e8f0 20%,
+    #f1f5f9 40%,
+    #e2e8f0 60%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  animation: fade-up 260ms ease-out both;
+}
+
+/* The unread badge on the Action Plan tab. Two beats, then still - enough to
+   catch the eye without becoming a thing that blinks at the official for the
+   rest of the meeting. */
+@keyframes pulse-once {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.9);
+    opacity: 0.6;
+  }
+}
+
+.pulse-once {
+  animation: pulse-once 900ms ease-in-out 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .fade-up,
+  .pulse-once {
+    animation: none;
+  }
+}

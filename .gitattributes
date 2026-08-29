@@ -1,0 +1,26 @@
+# Normalise line endings. Without this, files committed from Windows carry CRLF
+# and every diff on a Linux machine shows the whole file as changed.
+* text=auto eol=lf
+
+*.py   text
+*.ts   text
+*.tsx  text
+*.mjs  text
+*.js   text
+*.css  text
+*.md   text
+*.json text
+*.yml  text
+*.txt  text
+
+# Notebooks are JSON, but the executed outputs make diffs unreadable; mark them
+# so review tools do not try.
+*.ipynb text linguist-documentation
+
+# Binary, never touch
+*.png    binary
+*.jpg    binary
+*.parquet binary
+*.pkl    binary
+*.zip    binary
+*.shp    binary

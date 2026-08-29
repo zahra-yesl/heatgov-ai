@@ -1,0 +1,59 @@
+# HeatGov AI - Backend dependencies
+# Python 3.11 (do NOT use 3.14: several compiled wheels are unavailable).
+#
+# ---------------------------------------------------------------------------
+# WHY THE STRICT PINS
+#
+# The development machine runs Windows 11 with Smart App Control ENFORCED.
+# Smart App Control refuses to load compiled extension modules (.pyd/.dll)
+# whose file hash has no established Microsoft reputation, which in practice
+# means "very recently released wheels are blocked".
+#
+# The versions below were verified to (a) load under Smart App Control and
+# (b) work together. Bumping any of them may reintroduce:
+#   ImportError: DLL load failed ... An Application Control policy has blocked this file.
+#
+# Additional compatibility constraints baked into these pins:
+#   * numba <= 0.60 requires numpy < 2.1        -> numpy is pinned to 2.0.2
+#   * shap 0.46 cannot parse xgboost >= 3.0 models (base_score serialisation)
+#                                               -> xgboost is pinned to 2.1.4
+# ---------------------------------------------------------------------------
+
+# --- FortyGuard API client (vendored in backend/fortyguard) ---
+requests>=2.31.0
+charset_normalizer==3.3.2
+python-dotenv>=1.0.0
+
+# --- Data handling & geospatial ---
+numpy==2.0.2
+pandas==2.2.3
+pyarrow==17.0.0          # Parquet engine (project cache format)
+geopandas>=1.0.0
+shapely>=2.0.0
+pyogrio==0.10.0          # 0.13's bundled GDAL DLL is blocked by Smart App Control
+
+# --- Machine learning ---
+scikit-learn>=1.5.0
+xgboost==2.1.4
+shap==0.46.0
+numba==0.60.0
+llvmlite==0.43.0
+
+# --- Conversational agent ---
+# google-generativeai is end-of-life; google-genai is the supported SDK.
+google-genai>=1.0.0
+
+# --- Web API ---
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.8.0
+
+# --- Notebooks & exploratory plots ---
+# --- Tests ---
+pytest>=8.0.0
+
+# --- Notebooks & exploratory plots ---
+jupyterlab>=4.0.0
+ipykernel>=6.29.0
+matplotlib>=3.8.0
+folium>=0.15.0

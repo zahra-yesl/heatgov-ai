@@ -1,0 +1,61 @@
+# Secrets
+#
+# Listed one by one on purpose. A blanket `.env*` would also swallow
+# .env.example, which is the file that tells a new contributor which keys the
+# project needs.
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+*.pem
+
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Cached API responses and derived data (regenerate with the pipeline)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Manually downloaded external datasets (large; see data/external/README.md)
+data/external/*
+!data/external/.gitkeep
+!data/external/README.md
+
+# Trained models
+models/*
+!models/.gitkeep
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+.vercel/
+frontend/.test-build/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editors
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+
+# OS
+Thumbs.db
+.DS_Store
