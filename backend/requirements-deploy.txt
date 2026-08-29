@@ -1,0 +1,52 @@
+# HeatGov AI - runtime-only dependencies for a hosted deployment.
+#
+# WHEN TO USE THIS FILE
+#
+# `requirements.txt` is the development environment: it installs JupyterLab,
+# ipykernel, Folium and pytest, none of which the running API imports. On a
+# 512 MB free-tier instance that install is slow and the extra packages buy
+# nothing, so point the build command here instead:
+#
+#     buildCommand: pip install -r backend/requirements-deploy.txt
+#
+# See docs/DEPLOYMENT.md.
+#
+# The versions are copied from requirements.txt and must stay in step with it.
+# The pins are explained there; the short version is that they are chosen for
+# Windows Smart App Control and for two library incompatibilities
+# (numba <= 0.60 needs numpy < 2.1; shap 0.46 cannot read xgboost >= 3.0
+# models). Keeping the same pins here means the deployed API runs the exact
+# model artifacts that were trained locally.
+
+# --- FortyGuard API client (vendored in backend/fortyguard) ---
+requests>=2.31.0
+charset_normalizer==3.3.2
+python-dotenv>=1.0.0
+
+# --- Data handling & geospatial ---
+numpy==2.0.2
+pandas==2.2.3
+pyarrow==17.0.0
+geopandas>=1.0.0
+shapely>=2.0.0
+pyogrio==0.10.0
+
+# --- Machine learning ---
+scikit-learn>=1.5.0
+xgboost==2.1.4
+shap==0.46.0
+numba==0.60.0
+llvmlite==0.43.0
+
+# matplotlib is NOT optional here despite the API drawing nothing: `import shap`
+# pulls in shap.plots, which imports matplotlib at module level. Removing it
+# turns every prediction into an ImportError.
+matplotlib>=3.8.0
+
+# --- Conversational agent ---
+google-genai>=1.0.0
+
+# --- Web API ---
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.8.0

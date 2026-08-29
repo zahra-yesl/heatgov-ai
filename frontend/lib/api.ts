@@ -6,8 +6,26 @@
  * during a demo.
  */
 
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
+/**
+ * Where the backend lives.
+ *
+ * On Vercel this is set to the Render URL; with nothing set it falls back to
+ * the local uvicorn, so `npm run dev` needs no configuration at all.
+ *
+ * Next.js inlines `process.env.NEXT_PUBLIC_*` at BUILD time, not at run time.
+ * Changing this variable in the Vercel dashboard therefore has no effect until
+ * the project is redeployed - see docs/DEPLOYMENT.md.
+ *
+ * `NEXT_PUBLIC_API_BASE` is the name this project used first and is still
+ * honoured so existing `.env.local` files keep working.
+ */
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  process.env.NEXT_PUBLIC_API_BASE ??
+  "http://localhost:8000";
+
+/** @deprecated Use {@link API_URL}. Kept so older imports do not break. */
+export const API_BASE = API_URL;
 
 /* ----------------------------------------------------------------- layers */
 
@@ -141,7 +159,7 @@ export interface HealthResponse {
 /* -------------------------------------------------------------- requests */
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(`${API_URL}${path}`, {
     headers: { "Content-Type": "application/json" },
     ...init,
   });

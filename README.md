@@ -2,7 +2,7 @@
 
 ![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
 ![Next.js 16](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)
-![Tests 87/87](https://img.shields.io/badge/tests-87%2F87-brightgreen)
+![Tests 91/91](https://img.shields.io/badge/tests-91%2F91-brightgreen)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue)
 
 **From "where is it hot?" to "here is my $500,000 action plan" — in under two minutes.**
@@ -48,7 +48,7 @@ neighbourhoods.
 | Gemini conversational agent with function calling (5 tools) | Done |
 | Budget optimizer (exact 0/1 knapsack) | Done |
 | FastAPI REST API (6 endpoints, 27/27 end-to-end tests) | Done |
-| Next.js + MapLibre single-page interface (48/48 end-to-end tests) | Done |
+| Next.js + MapLibre single-page interface (50/50 end-to-end tests) | Done |
 
 ---
 
@@ -229,8 +229,15 @@ To verify both halves without a browser:
 
 ```powershell
 .\.venv\Scripts\python.exe backend\api\test_endpoints.py   # 27 checks, real uvicorn
-cd frontend; npm test                                       # 48 checks, real HTTP + Gemini
+cd frontend; npm test                                       # 50 checks, real HTTP + Gemini
 ```
+
+### Deploying it
+
+`render.yaml` and `frontend/vercel.json` configure a free-tier deployment: the
+API on Render, the interface on Vercel. The full walkthrough, including the one
+prerequisite that is easy to miss, is in
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ---
 

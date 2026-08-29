@@ -49,7 +49,28 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 FORTYGUARD_API_KEY = os.getenv("FORTYGUARD_API_KEY")
 FORTYGUARD_BASE_URL = os.getenv("FORTYGUARD_BASE_URL", "https://api.fortyguard.com")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Gemini keys, one or several.
+#
+# The free tier caps requests per minute per key, and a demo that runs the
+# tool-calling loop three or four times can exhaust one key mid-answer. So the
+# agent accepts a pool: set GEMINI_API_KEYS to a comma-separated list and it
+# moves to the next key when Google returns 429 / RESOURCE_EXHAUSTED.
+#
+# GEMINI_API_KEY (singular) is still read and still works; it is simply the
+# one-element case. Duplicates are dropped so a .env that sets both does not
+# retry the same exhausted key twice.
+def _gemini_keys() -> list[str]:
+    raw = f"{os.getenv('GEMINI_API_KEYS', '')},{os.getenv('GEMINI_API_KEY', '')}"
+    seen: list[str] = []
+    for key in (part.strip() for part in raw.split(",")):
+        if key and key not in seen:
+            seen.append(key)
+    return seen
+
+
+GEMINI_API_KEYS: list[str] = _gemini_keys()
+GEMINI_API_KEY: str | None = GEMINI_API_KEYS[0] if GEMINI_API_KEYS else None
 # Gemini model names are retired over time. Verified against the live API on
 # 2026-08-27: gemini-2.0-flash returns 404, and gemini-2.5-flash returns 404
 # with the message "Please update your code to use models/gemini-3.6-flash".

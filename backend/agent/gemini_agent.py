@@ -28,6 +28,17 @@ from agent.tools import TOOL_FUNCTIONS  # noqa: E402
 MAX_TOOL_ROUNDS = 6
 MAX_RETRIES = 3
 
+# Substrings that identify an exhausted quota in a google-genai exception.
+# The SDK raises ClientError with the HTTP status and the Google status name in
+# the message rather than a dedicated exception class, so this is a string test
+# by necessity. Checked case-insensitively.
+QUOTA_MARKERS = ("429", "resource_exhausted", "quota")
+
+
+def _is_quota_error(message: str) -> bool:
+    lowered = message.lower()
+    return any(marker in lowered for marker in QUOTA_MARKERS)
+
 SYSTEM_PROMPT = """You are HeatGov AI, an advisor helping American municipal \
 officials decide where to invest against urban heat.
 
@@ -159,19 +170,41 @@ class HeatGovAgent:
     """Runs the tool-calling loop and returns a finished answer."""
 
     def __init__(self, model: str | None = None) -> None:
-        if not config.GEMINI_API_KEY:
+        if not config.GEMINI_API_KEYS:
             raise AgentUnavailable(
-                "GEMINI_API_KEY is not set. Add it to .env. "
+                "No Gemini key configured. Set GEMINI_API_KEY (a single key) or "
+                "GEMINI_API_KEYS (comma-separated) in .env. "
                 "Get a key at https://ai.google.dev/"
             )
         self.model = model or config.GEMINI_MODEL
-        self.client = genai.Client(api_key=config.GEMINI_API_KEY)
+        self._keys = list(config.GEMINI_API_KEYS)
+        self._key_index = 0
+        self.client = genai.Client(api_key=self._keys[0])
         self.tools = [types.Tool(function_declarations=_declarations())]
 
+    def _next_key(self) -> bool:
+        """Move to the next key in the pool. False once the pool is spent.
+
+        Quota is counted per key, so an exhausted key says nothing about the
+        others. Rotating is cheaper and far less visible to the user than the
+        alternative, which is waiting out a rate-limit window mid-demo.
+        """
+        if self._key_index + 1 >= len(self._keys):
+            return False
+        self._key_index += 1
+        self.client = genai.Client(api_key=self._keys[self._key_index])
+        return True
+
     def _generate(self, contents: list) -> types.GenerateContentResponse:
-        """One model call, retrying the 503 that flash models return under load."""
+        """One model call, retrying the 503 that flash models return under load.
+
+        The attempt budget grows with the key pool: each rotation uses one
+        attempt, so a pool of three keys still leaves the full 503 backoff for
+        whichever key ends up serving the call.
+        """
         last: Exception | None = None
-        for attempt in range(1, MAX_RETRIES + 1):
+        budget = MAX_RETRIES + len(self._keys) - 1
+        for attempt in range(1, budget + 1):
             try:
                 return self.client.models.generate_content(
                     model=self.model,
@@ -184,7 +217,10 @@ class HeatGovAgent:
                 )
             except Exception as exc:  # noqa: BLE001
                 last = exc
-                if "503" in str(exc) and attempt < MAX_RETRIES:
+                message = str(exc)
+                if _is_quota_error(message) and self._next_key():
+                    continue
+                if "503" in message and attempt < budget:
                     time.sleep(4 * attempt)
                     continue
                 raise AgentUnavailable(f"{type(exc).__name__}: {exc}") from exc

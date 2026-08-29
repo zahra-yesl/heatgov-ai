@@ -45,15 +45,28 @@ GitHub is scanned continuously by bots looking for exactly this.
 ## Scope of this project
 
 HeatGov AI is a hackathon prototype. It has no authentication, no user
-accounts, and no database. The API is meant to be reachable only from
-`localhost`, and CORS is restricted accordingly in `backend/api/main.py`:
+accounts, no rate limiting and no database.
 
-```python
-allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"]
-```
+CORS in `backend/api/main.py` allows the two localhost origins, anything listed
+in `ALLOWED_ORIGINS`, and any `*.vercel.app` host by pattern. There is no `*`
+anywhere, and the pattern is matched with `re.fullmatch`, so it cannot be
+prefixed by an attacker-controlled label.
 
-Do not expose the backend to the public internet as it stands. It would let
-anyone spend your FortyGuard and Gemini credits through `/api/agent/chat`.
+**CORS is not a security control.** It stops a browser on someone else's page
+from reading your API's responses. It stops nothing at all from `curl`. Anyone
+who learns the deployed URL can call `/api/agent/chat` and spend your Gemini
+and FortyGuard credits.
+
+If you deploy this (see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)), take that
+seriously:
+
+- Use keys with a hard quota, never one attached to a billing account.
+- Keep the URL out of anything indexable until the demo.
+- Watch the provider dashboards for unexpected usage.
+- Take the service down when the hackathon is over.
+
+For anything beyond a hackathon, put an API key or a rate limiter in front of
+`/api/agent/chat` first.
 
 ## Reporting a vulnerability
 

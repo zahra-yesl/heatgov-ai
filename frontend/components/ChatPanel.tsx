@@ -22,6 +22,18 @@ const SUGGESTIONS = [
 ];
 
 /**
+ * How long the first answer may take before we explain the wait.
+ *
+ * Render's free tier suspends a service after 15 minutes of no traffic and
+ * cold-starts it on the next request, which takes 30-50 seconds. Without a
+ * word of explanation that reads as a broken app, and a judge clicking through
+ * a submission will not wait it out. Five seconds is comfortably longer than
+ * any warm response measured locally (2-4 s for a tool-calling round), so the
+ * banner does not flash during normal use.
+ */
+const COLD_START_MS = 5000;
+
+/**
  * The tool trace, folded away by default.
  *
  * Expanded, four or five function names wrap onto three lines and dominate the
@@ -85,8 +97,20 @@ export default function ChatPanel({
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
+  const [wakingUp, setWakingUp] = useState(false);
   const scroller = useRef<HTMLDivElement | null>(null);
   const composer = useRef<HTMLTextAreaElement | null>(null);
+  // Refs, not state: `send` must read the current values without being
+  // re-created, and neither of these should trigger a render on its own.
+  const answered = useRef(false);
+  const coldStartTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (coldStartTimer.current) clearTimeout(coldStartTimer.current);
+    },
+    [],
+  );
 
   // Generated after mount, never during render: a random id produced on the
   // server would not match the one produced in the browser, and React would
@@ -125,9 +149,18 @@ export default function ChatPanel({
     const budget = parseBudget(question);
     const started = performance.now();
 
+    // Only until the backend has answered once. After that it is awake, and a
+    // slow answer means Gemini is thinking, which the spinner already says.
+    if (!answered.current) {
+      coldStartTimer.current = setTimeout(() => setWakingUp(true), COLD_START_MS);
+    }
+
     try {
       const response = await sendChat(question, sessionId || "anonymous");
       const seconds = (performance.now() - started) / 1000;
+
+      answered.current = true;
+      setWakingUp(false);
 
       setMessages((previous) => [
         ...previous,
@@ -156,6 +189,11 @@ export default function ChatPanel({
         },
       ]);
     } finally {
+      if (coldStartTimer.current) clearTimeout(coldStartTimer.current);
+      coldStartTimer.current = null;
+      // The banner is deliberately NOT cleared on failure. A request that dies
+      // before the first success is most likely the cold start timing out, and
+      // the explanation is more useful than the raw error alone.
       setBusy(false);
     }
   }
@@ -171,6 +209,20 @@ export default function ChatPanel({
           </span>
         ) : null}
       </header>
+
+      {wakingUp ? (
+        <div
+          role="status"
+          className="fade-up flex items-start gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-[11px] leading-snug text-amber-900"
+        >
+          <span aria-hidden="true">&#9203;</span>
+          <span>
+            <strong className="font-semibold">First load:</strong> backend
+            waking up (30&ndash;50s, Render free tier). Next interactions will
+            be instant.
+          </span>
+        </div>
+      ) : null}
 
       <div ref={scroller} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
         {messages.length === 0 ? (

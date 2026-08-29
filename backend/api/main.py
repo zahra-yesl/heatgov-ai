@@ -19,6 +19,7 @@ conversational answer and the REST answer can never disagree.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -44,14 +45,53 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# The Next.js dev server runs on a different port, which browsers treat as a
-# different origin and block by default. This is the explicit allow-list.
+# Cross-origin access.
+#
+# The browser refuses a fetch whose origin the server does not vouch for, and
+# the Next.js front end is always on a different origin than this API: a
+# different port in development, a different host once deployed.
+#
+# Three ways in, in order of preference:
+#
+#   1. The two localhost origins, always allowed, so `npm run dev` needs no
+#      configuration.
+#   2. ALLOWED_ORIGINS - a comma-separated list set in the Render dashboard.
+#      This is the exact-match route and the one to use for the real front end.
+#   3. ALLOWED_ORIGIN_REGEX - a pattern covering Vercel's generated hostnames.
+#      Vercel mints a NEW hostname for every preview deployment, so pinning the
+#      production URL alone would break every preview link. Starlette matches
+#      this with re.fullmatch, not re.search, so it cannot be prefixed by an
+#      attacker-controlled label: `https://evil.com/heatgov` does not match,
+#      nor does `https://vercel.app.evil.com`. Both verified.
+#
+#      The `heatgov...` half is a prefix match, so a registered
+#      `heatgov-something.com` would also be allowed. That is the cost of
+#      reserving a domain we have not bought yet; once the real one exists,
+#      delete that alternative and put the exact origin in ALLOWED_ORIGINS.
+#
+# Note the deliberate absence of "*". With allow_credentials=True a wildcard is
+# rejected by the browser anyway, and this API can spend real FortyGuard and
+# Gemini credits - see SECURITY.md.
+LOCAL_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+_extra_origins = [
+    origin.strip().rstrip("/")
+    for origin in os.getenv("ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
+ALLOWED_ORIGIN_REGEX = (
+    r"https://[a-z0-9][a-z0-9-]*(\.[a-z0-9][a-z0-9-]*)*\.vercel\.app"  # any Vercel deployment
+    r"|https://heatgov[a-z0-9.-]*"                                     # future custom domain
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=LOCAL_ORIGINS + _extra_origins,
+    allow_origin_regex=ALLOWED_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

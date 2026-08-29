@@ -37,7 +37,7 @@ cd frontend; npm run dev
 ```powershell
 .\.venv\Scripts\python.exe -m pytest backend\optimizer\ -v     # 14 unit tests
 .\.venv\Scripts\python.exe backend\api\test_endpoints.py       # 27 end-to-end checks
-cd frontend; npm test                                          # 46 browser-path checks
+cd frontend; npm test                                          # 50 browser-path checks
 ```
 
 The last two start real servers and make real HTTP requests; `npm test` also

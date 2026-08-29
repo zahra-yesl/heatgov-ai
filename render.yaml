@@ -1,0 +1,34 @@
+# Render deployment for the HeatGov AI backend.
+#
+# Render reads this file when the repository is connected as a Blueprint, or
+# offers it as the auto-detected configuration when you create a Web Service
+# by hand. Either way the values below are what it fills the form with.
+#
+# NOTHING SECRET LIVES HERE. Keys are marked `sync: false`, which tells Render
+# "this variable exists, ask the operator for its value in the dashboard and
+# never write it into git". Only the two non-secret settings carry a `value`.
+#
+# Step-by-step instructions: docs/DEPLOYMENT.md
+
+services:
+  - type: web
+    name: heatgov-ai-backend
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn api.main:app --app-dir backend --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: FORTYGUARD_API_KEY
+        sync: false
+      - key: FORTYGUARD_BASE_URL
+        value: https://api.fortyguard.com
+      - key: GEMINI_API_KEYS
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.6-flash
+      - key: CENSUS_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.11.9
