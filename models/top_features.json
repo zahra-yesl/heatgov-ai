@@ -1,0 +1,32 @@
+[
+  {
+    "rank": 1,
+    "feature": "median_income",
+    "mean_abs_shap": 9.983745574951172,
+    "source": "external"
+  },
+  {
+    "rank": 2,
+    "feature": "distance_to_coast_km",
+    "mean_abs_shap": 2.509347677230835,
+    "source": "external"
+  },
+  {
+    "rank": 3,
+    "feature": "temp_max_22h",
+    "mean_abs_shap": 1.8285096883773804,
+    "source": "FortyGuard"
+  },
+  {
+    "rank": 4,
+    "feature": "elevation_m",
+    "mean_abs_shap": 1.0033553838729858,
+    "source": "FortyGuard"
+  },
+  {
+    "rank": 5,
+    "feature": "pop_density",
+    "mean_abs_shap": 0.9336421489715576,
+    "source": "external"
+  }
+]

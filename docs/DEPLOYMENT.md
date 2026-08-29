@@ -102,6 +102,23 @@ If you decide **not** to publish the data, the deployed backend can still serve
 rankings and the budget plan will return errors. In that case demo from
 localhost and treat the deployment as evidence that the project ships.
 
+### Confirm the build is sound before you deploy
+
+A deployment is only as good as the artifacts you just committed, so run the
+three suites locally first:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest backend\optimizer\ -v   # 14 unit tests
+.\.venv\Scripts\python.exe backend\api\test_endpoints.py     # 27 end-to-end checks
+cd frontend; npm test                                        # 50 browser-path checks
+```
+
+**91 checks in total.** The last two start real servers and need real keys, and
+`npm test` makes one live Gemini call. Budget for that: the free tier allows 20
+`generate_content` requests per key per **day**, so two or three full runs
+exhaust a single key. `npm run test:no-agent` skips the Gemini call when you
+only need to check the HTTP paths.
+
 ---
 
 ## 1. Backend on Render (free tier)

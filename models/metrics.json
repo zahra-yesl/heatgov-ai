@@ -1,0 +1,119 @@
+{
+  "models": [
+    {
+      "model": "Baseline (linear)",
+      "n_features": 1,
+      "features": [
+        "temp_max_22h"
+      ],
+      "test_r2": 0.24824828724197068,
+      "test_mae": 13.087647996736813,
+      "cv_r2_mean": 0.20055955527545316,
+      "cv_r2_std": 0.15032643586736474,
+      "cv_r2_folds": [
+        0.24824828724197034,
+        0.3591680227804891,
+        -0.08246038102319986,
+        0.2743881759538772,
+        0.20345367142412907
+      ],
+      "n_train": 75,
+      "n_test": 19
+    },
+    {
+      "model": "XGBoost Model A",
+      "n_features": 7,
+      "features": [
+        "temp_max_22h",
+        "distance_to_coast_km",
+        "impervious_surface_pct",
+        "elevation_m",
+        "peak_at_2h",
+        "peak_at_3h",
+        "peak_at_16h"
+      ],
+      "test_r2": 0.5201573901314227,
+      "test_mae": 10.01692718744706,
+      "cv_r2_mean": 0.3675818350596366,
+      "cv_r2_std": 0.27423838840019904,
+      "cv_r2_folds": [
+        0.5201573901314227,
+        0.6701724698484666,
+        0.5629168689459685,
+        0.1180325428008453,
+        -0.03337009642851996
+      ],
+      "n_train": 75,
+      "n_test": 19,
+      "best_params": {
+        "learning_rate": 0.05,
+        "max_depth": 3,
+        "n_estimators": 100
+      }
+    },
+    {
+      "model": "XGBoost Model B",
+      "n_features": 10,
+      "features": [
+        "temp_max_22h",
+        "distance_to_coast_km",
+        "impervious_surface_pct",
+        "elevation_m",
+        "peak_at_2h",
+        "peak_at_3h",
+        "peak_at_16h",
+        "pop_density",
+        "pop_over_65_pct",
+        "median_income"
+      ],
+      "test_r2": 0.6744977014961876,
+      "test_mae": 7.868815972858757,
+      "cv_r2_mean": 0.5885780077568808,
+      "cv_r2_std": 0.08180183721998062,
+      "cv_r2_folds": [
+        0.6744977014961877,
+        0.6859704772407254,
+        0.46755536133677256,
+        0.556065206940388,
+        0.5588012917703307
+      ],
+      "n_train": 75,
+      "n_test": 19,
+      "best_params": {
+        "learning_rate": 0.05,
+        "max_depth": 3,
+        "n_estimators": 100
+      }
+    }
+  ],
+  "side_diagnostic": {
+    "model": "Model A-swap (diagnostic)",
+    "n_features": 7,
+    "features": [
+      "temp_max_22h",
+      "exceedance_hours_30C",
+      "impervious_surface_pct",
+      "elevation_m",
+      "peak_at_2h",
+      "peak_at_3h",
+      "peak_at_16h"
+    ],
+    "test_r2": 0.4136997267599456,
+    "test_mae": 11.553046084213095,
+    "cv_r2_mean": 0.28090833055409076,
+    "cv_r2_std": 0.22055078030471673,
+    "cv_r2_folds": [
+      0.4136997267599458,
+      0.6248675457492255,
+      0.14770757908619736,
+      0.23265676582567696,
+      -0.014389964650591835
+    ],
+    "n_train": 75,
+    "n_test": 19
+  },
+  "winner": "XGBoost Model B",
+  "n_tracts": 94,
+  "random_state": 42,
+  "note": "Hyperparameters were selected by grid search on the training split of this same dataset, so cv_r2_mean is mildly optimistic. With 94 tracts, prefer cv_r2_mean +/- cv_r2_std over test_r2, which is computed on 19 tracts."
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "rank": 1,
+    "feature": "temp_max_22h",
+    "mean_abs_shap": 4.97943115234375,
+    "source": "FortyGuard"
+  },
+  {
+    "rank": 2,
+    "feature": "impervious_surface_pct",
+    "mean_abs_shap": 4.755899906158447,
+    "source": "external"
+  },
+  {
+    "rank": 3,
+    "feature": "distance_to_coast_km",
+    "mean_abs_shap": 2.5588948726654053,
+    "source": "external"
+  },
+  {
+    "rank": 4,
+    "feature": "elevation_m",
+    "mean_abs_shap": 2.424982786178589,
+    "source": "FortyGuard"
+  },
+  {
+    "rank": 5,
+    "feature": "peak_at_16h",
+    "mean_abs_shap": 0.16792654991149902,
+    "source": "FortyGuard"
+  }
+]

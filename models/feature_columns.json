@@ -1,0 +1,42 @@
+{
+  "best_model": "XGBoost Model B",
+  "columns": [
+    "temp_max_22h",
+    "distance_to_coast_km",
+    "impervious_surface_pct",
+    "elevation_m",
+    "peak_at_2h",
+    "peak_at_3h",
+    "peak_at_16h",
+    "pop_density",
+    "pop_over_65_pct",
+    "median_income"
+  ],
+  "label": "CIscoreP",
+  "peak_hour_columns": [
+    "peak_at_2h",
+    "peak_at_3h",
+    "peak_at_16h"
+  ],
+  "features_model_a": [
+    "temp_max_22h",
+    "distance_to_coast_km",
+    "impervious_surface_pct",
+    "elevation_m",
+    "peak_at_2h",
+    "peak_at_3h",
+    "peak_at_16h"
+  ],
+  "features_model_b": [
+    "temp_max_22h",
+    "distance_to_coast_km",
+    "impervious_surface_pct",
+    "elevation_m",
+    "peak_at_2h",
+    "peak_at_3h",
+    "peak_at_16h",
+    "pop_density",
+    "pop_over_65_pct",
+    "median_income"
+  ]
+}
